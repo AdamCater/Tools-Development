@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/foliageTool.uss?fileID=7433441132597879392&amp;guid=0f4d2dcb8e8fde2408adc37d1ba6e054&amp;type=3#foliageTool" />
+    <ui:Label text="Buttons" name="header" style="-unity-font-style: bold; -unity-text-align: middle-center; flex-grow: 0.1; justify-content: flex-end; align-self: auto; align-content: auto; align-items: stretch;" />
+    <ui:VisualElement name="container" style="flex-grow: 0; flex-direction: row; flex-shrink: 1; justify-content: center; align-items: stretch;">
+        <ui:Button text="Button" />
+        <ui:Button text="Button" />
+        <ui:Button text="Button" />
+    </ui:VisualElement>
+</ui:UXML>

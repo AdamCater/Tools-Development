@@ -1,30 +1,68 @@
+using System.Linq;
 using UnityEngine;
-using UnityEditor;
 using UnityEngine.UIElements;
 
-public class FoliageGenerator : MonoBehaviour
+public class FoliageGenerator
 {
-    [SerializeField] private int genWidth;
-    [SerializeField] private int genHeight;
-}
+    private FoliageDatabase foliageDatabase;
+    private DropdownField foliageDropdown;
 
-[CustomEditor(typeof(FoliageGenerator)), CanEditMultipleObjects]
-public class FoliageGeneratorEditor : Editor
-{
-    public override VisualElement CreateInspectorGUI()
+    //Assign Dropdown and Database
+    public void FoliageDropDown(DropdownField _dropDown)
     {
-        //Create root
-        VisualElement root = new VisualElement();
+        foliageDropdown = _dropDown;
+    }
+    public void FoliageDataBase(FoliageDatabase _dataBase)
+    {
+        foliageDatabase = _dataBase;
+    }
+    public void GenerateFoliage()
+    {
+        if (foliageDatabase == null)
+        {
+            Debug.LogError("foliageDatabase is null, make sure it's assigned");
+        }
+        if (foliageDropdown == null)
+        {
+            Debug.LogError("foliageDropdown is null, make sure it's assigned");
+        }
 
-        //Load in UXML from path and attach to the root
-        VisualTreeAsset asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/UXML/foliageGeneratorEditor.uxml");
-        asset.CloneTree(root);
+        string selectedFoliage = foliageDropdown.value;
+        FoliageType foliageType = foliageDatabase.foliageTypes.FirstOrDefault(f => f.foliageName == selectedFoliage);
 
-        StyleSheet sheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/UI/foliageTool.uss");
-        root.styleSheets.Add(sheet);
+        if (foliageType != null)
+        {
+            Debug.Log($"Spawning {foliageType.foliageName} with density {foliageType.density}");
+            GeneratePrefab(foliageType);
+        }
 
-        return root;
+    }
 
-        //return null; //returns a generic container element
+    public void SelectFoliage(string foliageName)
+    {
+        if (foliageDropdown != null && foliageDropdown.choices.Contains(foliageName))
+        {
+            foliageDropdown.value = foliageName;
+            Debug.Log($"Foliage Type '{foliageName}' selected");
+        }
+    }
+
+    public void GeneratePrefab(FoliageType foliageType)
+    {
+        string selectedFoliage = foliageDropdown.value;
+
+        if (foliageType != null && foliageType.foliagePrefab != null)
+        {
+            //Instantiate the prefab
+            GameObject spawnedFoliage = GameObject.Instantiate(foliageType.foliagePrefab, Vector3.zero, Quaternion.identity);
+            spawnedFoliage.name = foliageType.foliageName;
+
+            Debug.Log($"Successfully Spawned {foliageType.foliageName}");
+        }
+        else
+        {
+            Debug.LogError($"Prefab not found for {selectedFoliage}!");
+        }
+
     }
 }

@@ -7,6 +7,7 @@ public class FoliageGeneratorEditorWindow : EditorWindow
 {
     private FoliageDatabase foliageDatabase;
     private DropdownField foliageDropdown;
+    private FoliageGenerator foliageGenerator;
 
     [MenuItem("Tools/Foliage Generator")]
     public static void ShowWindow()
@@ -23,9 +24,11 @@ public class FoliageGeneratorEditorWindow : EditorWindow
 
     private void CreateGUI()
     {
+        foliageGenerator = new FoliageGenerator();
+
         //Load UMXL
         VisualTreeAsset asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/UI/foliageTool.uxml");
-        if (asset != null )
+        if (asset != null)
         {
             asset.CloneTree(rootVisualElement);
         }
@@ -45,7 +48,6 @@ public class FoliageGeneratorEditorWindow : EditorWindow
             Debug.LogError("USS File not found: Assets/UI/foliageTool.uss");
         }
 
-
         //Load the foliage database
         foliageDatabase = AssetDatabase.LoadAssetAtPath<FoliageDatabase>("Assets/Prefabs/Data/FoliageDatabase.asset");
         if (foliageDatabase == null)
@@ -54,11 +56,15 @@ public class FoliageGeneratorEditorWindow : EditorWindow
             return;
         }
 
+        foliageGenerator.FoliageDataBase(foliageDatabase);
+
         foliageDropdown = new DropdownField("Selected Foliage");
         foliageDropdown.choices = foliageDatabase.foliageTypes.Select(f => f.foliageName).ToList();
         foliageDropdown.index = 0; //Default Selection
         foliageDropdown.SetEnabled(false); //Disable user Input
         rootVisualElement.Add(foliageDropdown); //Add it to the UI
+
+        foliageGenerator.FoliageDropDown(foliageDropdown);
 
         //Create a dropdown menu (Dynamically)
         foreach (FoliageType foliage in foliageDatabase.foliageTypes) //Loops through foliage types and finds matching buttons
@@ -66,7 +72,7 @@ public class FoliageGeneratorEditorWindow : EditorWindow
             Button foliageButton = rootVisualElement.Q<Button>(foliage.foliageName); //Find button by name
             if (foliageButton != null)
             {
-                foliageButton.clicked += () => SelectFoliage(foliage.foliageName);
+                foliageButton.clicked += () => foliageGenerator.SelectFoliage(foliage.foliageName);
             }
             else
             {
@@ -77,54 +83,14 @@ public class FoliageGeneratorEditorWindow : EditorWindow
 
         //Find and Generate button and attach the GenerateFoliage Function
         Button generateButton = rootVisualElement.Q<Button>("generateButton");
+
         if (generateButton != null)
         {
-            generateButton.clicked += GenerateFoliage;
+            generateButton.clicked += foliageGenerator.GenerateFoliage;
         }
         else
         {
             Debug.LogError("Button: 'GenerateButton' was not found in the UXML!");
         }
     }
-
-    private void GenerateFoliage()
-    {
-        string selectedFoliage = foliageDropdown.value;
-        FoliageType foliageType = foliageDatabase.foliageTypes.FirstOrDefault(f => f.foliageName == selectedFoliage);
-
-        if (foliageType != null)
-        {
-            Debug.Log($"Spawning {foliageType.foliageName} with density {foliageType.density}");
-            GeneratePrefab(foliageType);
-        }
-    }
-
-    private void SelectFoliage(string foliageName)
-    {
-        if (foliageDropdown != null && foliageDropdown.choices.Contains(foliageName))
-        {
-            foliageDropdown.value = foliageName;
-            Debug.Log($"Foliage Type '{foliageName}' selected");
-        }
-    }
-
-    void GeneratePrefab(FoliageType foliageType)
-    {
-        string selectedFoliage = foliageDropdown.value;
-
-        if (foliageType != null && foliageType.foliagePrefab != null)
-        {
-            //Instantiate the prefab
-            GameObject spawnedFoliage = Instantiate(foliageType.foliagePrefab, Vector3.zero, Quaternion.identity);
-            spawnedFoliage.name = foliageType.foliageName;
-
-            Debug.Log($"Successfully Spawned {foliageType.foliageName}");
-        }
-        else
-        {
-            Debug.LogError($"Prefab not found for {selectedFoliage}!");
-        }
-
-    }
-
 }

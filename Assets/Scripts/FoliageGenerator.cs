@@ -1,11 +1,13 @@
 using System.Linq;
 using UnityEngine;
+using UnityEngine.TerrainTools;
 using UnityEngine.UIElements;
 
 public class FoliageGenerator
 {
     private FoliageDatabase foliageDatabase;
     private DropdownField foliageDropdown;
+    private Paintbrush foliagePaintbrush;
 
     //Assign Dropdown and Database
     public void FoliageDropDown(DropdownField _dropDown)
@@ -64,5 +66,21 @@ public class FoliageGenerator
             Debug.LogError($"Prefab not found for {selectedFoliage}!");
         }
 
+    }
+
+    public void Paintbrush()
+    {
+        Debug.Log("Paintbrush button clicked");
+
+        if (foliageDropdown != null && foliageDropdown.value == "Tree")
+        {
+            Debug.Log($"You cannot use the Paintbrush whilst Prefab: {foliageDropdown.value} is selected!");
+        }
+        else if (foliageDropdown != null && foliageDropdown.value == "Grass")
+        {
+            Debug.Log($"You have used the Paintbrush for Prefab: {foliageDropdown.value}");
+            foliagePaintbrush.brushPrefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            
+        }
     }
 }

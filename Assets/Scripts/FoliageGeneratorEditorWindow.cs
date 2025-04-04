@@ -92,5 +92,17 @@ public class FoliageGeneratorEditorWindow : EditorWindow
         {
             Debug.LogError("Button: 'GenerateButton' was not found in the UXML!");
         }
+
+        //Find and generate button and attach the Paintbrush Function
+        Button paintbrushButton = rootVisualElement.Q<Button>("Paintbrush");
+
+        if (paintbrushButton != null)
+        {
+            paintbrushButton.clicked += foliageGenerator.Paintbrush;
+        }
+        else
+        {
+            Debug.Log("Button: 'Paintbrush' was not found in the UXML");
+        }
     }
 }

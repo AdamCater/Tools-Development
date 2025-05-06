@@ -8,6 +8,7 @@ public class FoliageGeneratorEditorWindow : EditorWindow
     private FoliageDatabase foliageDatabase;
     private DropdownField foliageDropdown;
     private FoliageGenerator foliageGenerator;
+    private VisualElement previewElement;
 
     [MenuItem("Tools/Foliage Generator")]
     public static void ShowWindow()
@@ -66,6 +67,20 @@ public class FoliageGeneratorEditorWindow : EditorWindow
 
         foliageGenerator.FoliageDropDown(foliageDropdown);
 
+        //Setup preview Image
+        previewElement = rootVisualElement.Q<VisualElement>("previewContainer");
+        UpdatePrefabPreview();
+
+        if (previewElement == null)
+        {
+            Debug.LogError("Could not find 'previewContainer' VisualElement in UXML!");
+        }
+
+        foliageDropdown.RegisterValueChangedCallback(evt =>
+        {
+            UpdatePrefabPreview();
+        });
+
         //Create a dropdown menu (Dynamically)
         foreach (FoliageType foliage in foliageDatabase.foliageTypes) //Loops through foliage types and finds matching buttons
         {
@@ -73,6 +88,7 @@ public class FoliageGeneratorEditorWindow : EditorWindow
             if (foliageButton != null)
             {
                 foliageButton.clicked += () => foliageGenerator.SelectFoliage(foliage.foliageName);
+                UpdatePrefabPreview();
             }
             else
             {
@@ -103,6 +119,31 @@ public class FoliageGeneratorEditorWindow : EditorWindow
         else
         {
             Debug.Log("Button: 'Paintbrush' was not found in the UXML");
+        }
+    }
+
+    private void UpdatePrefabPreview()
+    {
+        string selectedFoliage = foliageDropdown.value;
+        FoliageType foliageType = foliageDatabase.foliageTypes.FirstOrDefault(f => f.foliageName == selectedFoliage);
+
+        if (foliageType != null && foliageType.foliagePrefab != null)
+        {
+            Texture2D previewTexture = AssetPreview.GetAssetPreview(foliageType.foliagePrefab);
+
+            if (previewTexture != null)
+            {
+                previewElement.style.backgroundImage = new StyleBackground(previewTexture);
+            }
+            else
+            {
+                Debug.LogWarning($"No preview available for: {foliageType.foliageName}");
+                previewElement.style.backgroundImage = null;
+            }
+        }
+        else
+        {
+            previewElement.style.backgroundImage = null;
         }
     }
 }

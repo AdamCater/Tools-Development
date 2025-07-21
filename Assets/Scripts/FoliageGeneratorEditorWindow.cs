@@ -10,6 +10,17 @@ public class FoliageGeneratorEditorWindow : EditorWindow
     private FoliageGenerator foliageGenerator;
     private VisualElement previewElement;
 
+    //References for the Vector3 UI Fields
+    private FloatField xField;
+    private FloatField yField;
+    private FloatField zField;
+
+    //Reference for the Density slider
+    private Slider densitySlider;
+
+    //Reference for the Spacing IntegerField
+    private IntegerField spacingField;
+
     [MenuItem("Tools/Foliage Generator")]
     public static void ShowWindow()
     {
@@ -102,7 +113,7 @@ public class FoliageGeneratorEditorWindow : EditorWindow
 
         if (generateButton != null)
         {
-            generateButton.clicked += foliageGenerator.GenerateFoliage;
+            generateButton.clicked += GenerateFoliageWithPosition;
         }
         else
         {
@@ -120,6 +131,29 @@ public class FoliageGeneratorEditorWindow : EditorWindow
         {
             Debug.Log("Button: 'Paintbrush' was not found in the UXML");
         }
+
+        //Find the Undo button and attach the UndoAction Function
+        Button undoPrefabButton = rootVisualElement.Q<Button>("undoButton");
+
+        if (undoPrefabButton != null)
+        {
+            undoPrefabButton.clicked += foliageGenerator.UndoAction;
+        }
+        else
+        {
+            Debug.Log($"Button: 'Undo' was not found in the UXML");
+        }
+
+        //Add UI references for X, Y, Z positions
+        xField = rootVisualElement.Q<FloatField>("unity-x-input");
+        yField = rootVisualElement.Q<FloatField>("unity-y-input");
+        zField = rootVisualElement.Q<FloatField>("unity-z-input");
+
+        //Add Slider References for Density slider
+        densitySlider = rootVisualElement.Q<Slider>("densitySlider");
+
+        //Add Spacing Referneces for Spacing IntegerField
+        spacingField = rootVisualElement.Q<IntegerField>("spacingField");
     }
 
     private void UpdatePrefabPreview()
@@ -146,4 +180,34 @@ public class FoliageGeneratorEditorWindow : EditorWindow
             previewElement.style.backgroundImage = null;
         }
     }
+
+    private void GenerateFoliageWithPosition()
+    {
+        //Get Selected Foliage
+        string selectedFoliage = foliageDropdown.value;
+        FoliageType foliageType = foliageDatabase.foliageTypes.FirstOrDefault(f => f.foliageName == selectedFoliage);
+
+
+        if (foliageType != null)
+        {
+            //Get the spawn position from the UI fields
+            float x = xField.value;
+            float y = yField.value;
+            float z = zField.value;
+
+            //Create a Vector3 for the spawn location
+            Vector3 spawnPosition = new Vector3(x, y, z);
+
+            //Get the Spawn Density from the slider
+            float spawnDensity = densitySlider.value;
+
+            //Get the Spacing from the IntegerField
+            int spacing = spacingField.value;
+
+            //Call the GenerateFoliage method with the specified position and density
+            foliageGenerator.GenerateFoliage(spawnPosition, spawnDensity, spacing);
+        }
+
+    }
 }
+

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   foliageName: Tree
   foliagePrefab: {fileID: 192044, guid: 19682540d8a014522a319b1cf788aee2, type: 3}
-  density: 0.5
+  density: 10
   minScale: 1
   maxScale: 2
   colourVariation: {r: 0, g: 1, b: 0, a: 1}

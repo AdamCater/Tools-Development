@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.TerrainTools;
@@ -8,6 +9,7 @@ public class FoliageGenerator
     private FoliageDatabase foliageDatabase;
     private DropdownField foliageDropdown;
     private Paintbrush foliagePaintbrush;
+    private List<GameObject> spawnedFoliageList = new List<GameObject>(); //Creates a list to keep track of spawned objects
 
     //Assign Dropdown and Database
     public void FoliageDropDown(DropdownField _dropDown)
@@ -18,7 +20,7 @@ public class FoliageGenerator
     {
         foliageDatabase = _dataBase;
     }
-    public void GenerateFoliage()
+    public void GenerateFoliage(Vector3 spawnPosition, float spawnDensity, int spacing)
     {
         if (foliageDatabase == null)
         {
@@ -34,8 +36,8 @@ public class FoliageGenerator
 
         if (foliageType != null)
         {
-            Debug.Log($"Spawning {foliageType.foliageName} with density {foliageType.density}");
-            GeneratePrefab(foliageType);
+            Debug.Log($"Spawning {foliageType.foliageName} with density {spawnDensity}");
+            GeneratePrefab(foliageType, spawnPosition, spawnDensity, spacing);
         }
 
     }
@@ -49,23 +51,62 @@ public class FoliageGenerator
         }
     }
 
-    public void GeneratePrefab(FoliageType foliageType)
+    public void GeneratePrefab(FoliageType foliageType, Vector3 spawnPosition, float spawnDensity, int spacing)
     {
         string selectedFoliage = foliageDropdown.value;
 
-        if (foliageType != null && foliageType.foliagePrefab != null)
+        // Calculate how many prefabs to spawn based on density
+        int numberOfFoliage = Mathf.RoundToInt(foliageType.density * spawnDensity);
+
+        for (int i = 0; i < numberOfFoliage; i++)
         {
-            //Instantiate the prefab
-            GameObject spawnedFoliage = GameObject.Instantiate(foliageType.foliagePrefab, Vector3.zero, Quaternion.identity);
+            // Calculate random offset for each spawned object
+            float offsetX = Random.Range(-spacing, spacing); // Random offset on the X axis 
+            float offsetZ = Random.Range(-spacing, spacing); // Random offset on the Z axis
+
+            // Apply the offset to the spawn position
+            Vector3 newSpawnPosition = spawnPosition + new Vector3(offsetX, 0 , offsetZ);
+
+            // Instantiate the prefab
+            GameObject spawnedFoliage = GameObject.Instantiate(foliageType.foliagePrefab, newSpawnPosition, Quaternion.identity);
             spawnedFoliage.name = foliageType.foliageName;
 
-            Debug.Log($"Successfully Spawned {foliageType.foliageName}");
-        }
-        else
-        {
-            Debug.LogError($"Prefab not found for {selectedFoliage}!");
+            // Add the spawned prefab to the list
+            spawnedFoliageList.Add(spawnedFoliage);
+
+            Debug.Log($"Successfully Spawned {foliageType.foliageName} at {newSpawnPosition}");
         }
 
+
+    }
+
+    public void UndoAction()
+    {
+        // Destroy all spawned foliage objects
+        if (spawnedFoliageList.Count == 0)
+        {
+            Debug.Log("No spawned prefabs to clear.");
+            return;
+        }
+
+        foreach (var spawnedFoliage in spawnedFoliageList)
+        {
+            if (spawnedFoliage != null)
+            {
+                //Destroy the Prefab
+                UnityEngine.Object.DestroyImmediate(spawnedFoliage);
+
+                Debug.Log($"Destroyed {spawnedFoliage.name} from scene.");
+            }
+            else
+            {
+                Debug.LogWarning("Found a null reference in the list of spawned prefabs.");
+            }
+        }
+
+        // Clear the list after destruction
+        spawnedFoliageList.Clear();
+        Debug.Log("Cleared all spawned prefabs.");
     }
 
     public void Paintbrush()

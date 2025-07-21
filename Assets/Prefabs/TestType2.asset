@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: TestType2
   m_EditorClassIdentifier: 
   foliageName: Grass
-  foliagePrefab: {fileID: 0}
-  density: 20
+  foliagePrefab: {fileID: 5562777841021709042, guid: 13e63b62418b55b42ada8cec89c18885, type: 3}
+  density: 15
   minScale: 1
   maxScale: 2
   colourVariation: {r: 0, g: 1, b: 0, a: 1}
